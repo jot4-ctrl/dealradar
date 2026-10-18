@@ -74,7 +74,7 @@
   };
   const styles = document.createElement('style');
   styles.textContent = `
-    .auth-lock{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(31,12,54,.48);backdrop-filter:blur(13px)}
+    .auth-lock{position:fixed;inset:0;z-index:15;display:grid;place-items:center;padding:20px;background:rgba(31,12,54,.48);backdrop-filter:blur(13px)}
     .auth-lock-card{width:min(520px,100%);padding:34px;border-radius:28px;background:linear-gradient(145deg,#fff,#fff6fc);border:1px solid rgba(255,255,255,.8);box-shadow:0 30px 100px rgba(30,9,58,.35);text-align:center}
     .auth-lock-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 16px;border-radius:19px;background:linear-gradient(135deg,#52e5c1,#c026d3);color:#fff;font-size:25px;font-weight:950;box-shadow:0 10px 24px rgba(192,38,211,.28)}
     .dealradar-locked>.wrap{filter:blur(8px);pointer-events:none;user-select:none}.auth-lock h2{margin:0;color:#25143c;font-size:30px;letter-spacing:-.06em}.auth-lock p{margin:10px auto 22px;max-width:390px;color:#6f6687}.auth-lock .btn{width:100%;max-width:300px}
