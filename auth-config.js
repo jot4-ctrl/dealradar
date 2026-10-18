@@ -30,6 +30,29 @@ window.DEALRADAR_SUPABASE = {
 
   const install = client => {
     window.DEALRADAR_SUPABASE_CLIENT = client;
+    let pendingEmail = '';
+    const showEmailPending = email => {
+      pendingEmail = email;
+      const note = document.querySelector('.auth-note');
+      if (!note) return;
+      note.innerHTML = 'Revisá tu bandeja de entrada y spam. <button type="button" id="resendConfirmation" class="auth-link">Reenviar enlace</button>';
+    };
+    document.addEventListener('click', async event => {
+      if (event.target?.id !== 'resendConfirmation' || !pendingEmail) return;
+      event.preventDefault();
+      const button = event.target;
+      button.disabled = true;
+      button.textContent = 'Enviando…';
+      const result = await client.auth.resend({ type: 'signup', email: pendingEmail, options: { emailRedirectTo: redirectUrl() } });
+      const note = document.querySelector('.auth-note');
+      if (result.error) {
+        button.disabled = false;
+        button.textContent = 'Reenviar enlace';
+        if (note) note.textContent = result.error.message;
+      } else if (note) {
+        note.textContent = 'Enlace reenviado. Revisá también la carpeta de spam.';
+      }
+    }, true);
     const syncSession = session => {
       const user = session?.user;
       if (!user || !session?.access_token) return;
@@ -79,8 +102,7 @@ window.DEALRADAR_SUPABASE = {
       else {
         button.disabled = false;
         button.textContent = 'Revisá tu email';
-        const note = document.querySelector('.auth-note');
-        if (note) note.textContent = 'Te enviamos un enlace para confirmar la cuenta.';
+        showEmailPending(email);
       }
     }, true);
     document.addEventListener('click', event => {
@@ -92,7 +114,7 @@ window.DEALRADAR_SUPABASE = {
 })();
 
 // Carga un puente independiente para evitar interferencias de caché o del formulario local.
-document.write('<script src="auth-bridge-v2.js?build=auth-callback-1"><\/script>');
+document.write('<script src="auth-bridge-v2.js?build=auth-email-1"><\/script>');
 
 // Fallback sin CDN: funciona en navegadores que bloquean scripts de terceros.
 (() => {
