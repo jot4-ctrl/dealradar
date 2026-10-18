@@ -1,6 +1,6 @@
 // Configuración pública de autenticación de DealRadar.
-// Completá estos dos valores con los datos de tu proyecto Supabase.
+// Esta clave es publicable y está pensada para usarse en el navegador.
 window.DEALRADAR_SUPABASE = {
-  url: '',
-  anonKey: ''
+  url: 'https://hfbelrcpgtstkccfwfol.supabase.co',
+  anonKey: 'sb_publishable_n-2131IJcET4m_n46i59fA_MgAFnSql'
 };
