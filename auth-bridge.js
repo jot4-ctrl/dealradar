@@ -6,7 +6,7 @@
   if (!cfg.url || !cfg.anonKey) return;
   const accountKey = 'dealradar-account-v1';
   const sessionKey = 'dealradar-session-v1';
-  document.addEventListener('submit', async event => {
+  const submit = async event => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement) || form.id !== 'authForm') return;
     event.preventDefault();
@@ -35,5 +35,17 @@
       button.textContent = signup ? 'Crear mi cuenta' : 'Entrar a mi cuenta';
       if (note) note.textContent = error.message;
     }
-  }, true);
+  };
+
+  const bind = () => {
+    const form = document.getElementById('authForm');
+    if (!form || form.dataset.externalAuth === '1') return;
+    form.onsubmit = null;
+    form.addEventListener('submit', submit);
+    form.dataset.externalAuth = '1';
+  };
+  document.addEventListener('submit', submit, true);
+  new MutationObserver(bind).observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(bind, 250);
+  bind();
 })();
