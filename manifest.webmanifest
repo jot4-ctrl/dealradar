@@ -1,0 +1,11 @@
+{
+  "name": "DealScope · descuentos verificados",
+  "short_name": "DealScope",
+  "lang": "es-AR",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f8fb",
+  "theme_color": "#0d1b2a",
+  "description": "Descuentos y cupones verificables de todo el mundo.",
+  "icons": [{"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
