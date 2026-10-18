@@ -64,7 +64,7 @@
     button.textContent = 'Conectando…';
     try {
       const endpoint = signup
-        ? `${cfg.url}/auth/v1/signup?redirect_to=${encodeURIComponent('https://jot4-ctrl.github.io/dealradar/')}`
+        ? `${cfg.url}/auth/v1/signup?redirect_to=${encodeURIComponent('https://dealradar.site/')}`
         : `${cfg.url}/auth/v1/token?grant_type=password`;
       const response = await fetch(endpoint, { method: 'POST', headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(signup ? { email, password, data: { display_name: name } } : { email, password }) });
       const data = await response.json();

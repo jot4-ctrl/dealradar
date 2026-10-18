@@ -27,7 +27,7 @@
         const response = await fetch(`${cfg.url}/auth/v1/recover`, {
           method: 'POST',
           headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, redirect_to: 'https://jot4-ctrl.github.io/dealradar/' })
+          body: JSON.stringify({ email, redirect_to: 'https://dealradar.site/' })
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.msg || data.message || 'No pudimos enviar el enlace.');

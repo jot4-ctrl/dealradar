@@ -6,8 +6,8 @@ DealRadar está preparado para usar Supabase Auth desde GitHub Pages.
 2. En Authentication, habilitar Email y contraseña.
 3. Copiar la URL del proyecto y la clave pública `anon`.
 4. Pegarlas en `auth-config.js` como `url` y `anonKey`.
-5. En Authentication > URL Configuration, usar como Site URL `https://jot4-ctrl.github.io/dealradar/`.
-6. Agregar también `https://jot4-ctrl.github.io/dealradar/` en Redirect URLs.
+5. En Authentication > URL Configuration, usar como Site URL `https://dealradar.site/`.
+6. Agregar también `https://dealradar.site/` en Redirect URLs.
 
 El registro de DealRadar envía automáticamente esa dirección como retorno del email de confirmación. La ruta incluye `/dealradar/` porque el sitio está publicado como proyecto de GitHub Pages; sin esa subcarpeta GitHub Pages muestra que no existe el sitio.
 

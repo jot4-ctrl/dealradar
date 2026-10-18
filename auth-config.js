@@ -10,7 +10,7 @@ window.DEALRADAR_SUPABASE = {
   if (!cfg.url || !cfg.anonKey) return;
 
   const accountKey = 'dealradar-account-v1';
-  const redirectUrl = () => 'https://jot4-ctrl.github.io/dealradar/';
+  const redirectUrl = () => 'https://dealradar.site/';
   const sources = [
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
     'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
@@ -157,7 +157,7 @@ document.write('<script src="auth-bridge-v2.js?build=auth-email-4"><\/script>');
   const cfg = window.DEALRADAR_SUPABASE;
   if (!cfg.url || !cfg.anonKey) return;
   const accountKey = 'dealradar-account-v1';
-  const redirectUrl = () => 'https://jot4-ctrl.github.io/dealradar/';
+  const redirectUrl = () => 'https://dealradar.site/';
 
   document.addEventListener('submit', async event => {
     if (event.target.id !== 'authForm') return;
