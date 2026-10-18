@@ -117,6 +117,13 @@
   createBilling();
   syncAccess();
   document.addEventListener('click', event => {
+    if (event.target?.id !== 'unlockDealRadar') return;
+    document.getElementById('authLock')?.remove();
+    document.body.style.overflow = '';
+    const modal = document.getElementById('authModal');
+    if (modal) { modal.classList.add('show'); modal.setAttribute('aria-hidden', 'false'); }
+  }, true);
+  document.addEventListener('click', event => {
     if (event.target?.id === 'logoutBtn') { localStorage.removeItem(sessionKey); localStorage.removeItem(accountKey); setTimeout(syncAccess, 0); }
   }, true);
   window.addEventListener('storage', syncAccess);
