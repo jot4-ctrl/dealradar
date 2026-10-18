@@ -70,7 +70,11 @@
   };
   const isLoggedIn = () => Boolean(read(accountKey) && hasValidSession());
   const clearStaleAccount = () => {
-    if (read(accountKey) && !hasValidSession()) localStorage.removeItem(accountKey);
+    if (read(accountKey) && !hasValidSession()) {
+      localStorage.removeItem(accountKey);
+      const accountButton = document.getElementById('accountBtn');
+      if (accountButton) accountButton.textContent = 'Iniciar sesión';
+    }
   };
   const notify = message => {
     const toast = document.getElementById('toast');
