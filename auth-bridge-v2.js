@@ -6,6 +6,7 @@
   if (!cfg.url || !cfg.anonKey) return;
   const accountKey = 'dealradar-account-v1';
   const sessionKey = 'dealradar-session-v1';
+  const subscriptionKey = 'dealradar-subscription-v1';
 
   // El enlace de recuperación llega con la sesión temporal en el hash.
   // Este formulario funciona aunque el CDN de Supabase tarde en cargar.
@@ -103,7 +104,7 @@
 (() => {
   const sessionKey = 'dealradar-session-v1';
   const accountKey = 'dealradar-account-v1';
-  const paymentAlias = 'joaquin.lauci';
+  const subscriptionKey = 'dealradar-subscription-v1';
   const read = key => {
     try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
   };
@@ -117,6 +118,10 @@
     } catch { return false; }
   };
   const isLoggedIn = () => Boolean(read(accountKey) && hasValidSession());
+  const hasPremiumAccess = () => {
+    const subscription = read(subscriptionKey);
+    return subscription?.status === 'active' && Number(subscription.expiresAt || 0) > Date.now();
+  };
   const clearStaleAccount = () => {
     if (read(accountKey) && !hasValidSession()) {
       localStorage.removeItem(accountKey);
@@ -139,6 +144,16 @@
     .billing-card h2{margin:0 0 8px;font-size:25px}.billing-card p{margin:0;color:#f7eaff}.billing-note{margin-top:14px!important;font-size:12px;color:#efdfff!important}.billing-plans{display:grid;grid-template-columns:1fr 1fr;gap:10px}.billing-plan{padding:16px;border-radius:17px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22)}.billing-plan strong{display:block;font-size:18px}.billing-plan span{display:block;margin:4px 0 13px;color:#f6dcff;font-size:12px}.billing-plan button{width:100%;border:0;border-radius:10px;padding:10px;background:#52e5c1;color:#1e1234;font-weight:900}.billing-plan button.secondary{background:#fff;color:#6d28d9}.billing-plan button[disabled]{opacity:.62;cursor:not-allowed}.alias-box{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:11px 12px;border-radius:12px;background:rgba(0,0,0,.19);font-family:ui-monospace,Consolas,monospace}.alias-box button{border:0;border-radius:8px;padding:7px 9px;background:#fff;color:#6d28d9;font-weight:850;font-size:12px}@media(max-width:700px){.billing-card{grid-template-columns:1fr}.billing-plans{grid-template-columns:1fr}}
   `;
   document.head.appendChild(styles);
+  const paymentStyles = document.createElement('style');
+  paymentStyles.textContent = `
+    .payment-lock{position:fixed;inset:0;z-index:16;display:grid;place-items:center;padding:20px;background:rgba(31,12,54,.5);backdrop-filter:blur(13px)}
+    .payment-lock-card{width:min(620px,100%);padding:34px;border-radius:28px;background:linear-gradient(145deg,#fff,#fff7fc);border:1px solid rgba(255,255,255,.85);box-shadow:0 30px 100px rgba(30,9,58,.35);text-align:center}
+    .payment-lock-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 16px;border-radius:19px;background:linear-gradient(135deg,#f59e0b,#f43f8b);color:#fff;font-size:25px;font-weight:950;box-shadow:0 10px 24px rgba(244,63,139,.24)}
+    .payment-lock h2{margin:0;color:#25143c;font-size:30px;letter-spacing:-.06em}.payment-lock p{margin:10px auto 22px;max-width:470px;color:#6f6687}.payment-lock .payment-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:430px;margin:0 auto}.payment-lock .btn{width:100%}.payment-lock .payment-secondary{background:#fff;color:#6d28d9;border:1px solid #e5d9ef}.payment-lock .payment-trust{margin-top:18px;font-size:12px;color:#8b7a9d}
+    .billing-card{position:relative}.billing-status{display:flex;align-items:center;gap:8px;margin:16px 0 0;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.16);font-size:13px}.billing-status-dot{width:8px;height:8px;border-radius:50%;background:#fbbf24;box-shadow:0 0 0 4px rgba(251,191,36,.16)}.billing-actions{display:grid;gap:9px;margin-top:14px}.billing-actions button{width:100%;border:0;border-radius:10px;padding:11px;background:#52e5c1;color:#1e1234;font-weight:900;cursor:pointer}.billing-actions button.secondary{background:#fff;color:#6d28d9}.billing-actions button[disabled]{opacity:.62;cursor:not-allowed}
+    @media(max-width:520px){.payment-lock .payment-actions{grid-template-columns:1fr}.payment-lock-card{padding:26px 20px}}
+  `;
+  document.head.appendChild(paymentStyles);
   const authNote = document.querySelector('.auth-note');
   if (authNote) authNote.textContent = 'Cuenta protegida por Supabase. Tus datos de acceso no se guardan en este dispositivo.';
   const createBilling = () => {
@@ -146,10 +161,10 @@
     const section = document.createElement('section');
     section.id = 'billingSection';
     section.className = 'billing-section';
-    section.innerHTML = `<div class="billing-card"><div><h2>Acceso premium a DealRadar</h2><p>Desbloqueá el radar completo, guardá tus oportunidades y configurá alertas personalizadas.</p><div class="alias-box"><span>${paymentAlias}</span><button id="copyAlias" type="button">Copiar alias</button></div><p class="billing-note">Pago manual por Mercado Pago o transferencia. Confirmá el importe y las condiciones antes de enviar dinero. Los pagos con tarjeta y otros medios se habilitan al conectar un checkout del proveedor.</p></div><div class="billing-plans"><div class="billing-plan"><strong>Radar mensual</strong><span>Acceso completo durante 30 días</span><button id="payAlias" type="button">Pagar con Mercado Pago</button></div><div class="billing-plan"><strong>Otros medios</strong><span>Tarjetas, débito y billeteras</span><button class="secondary" type="button" disabled>Próximamente</button></div></div></div>`;
+    section.innerHTML = `<div class="billing-card"><div><h2>Elegí tu acceso a DealRadar</h2><p>Una suscripción desbloquea el catálogo completo, favoritos, alertas y filtros internacionales.</p><div class="billing-status"><span class="billing-status-dot"></span><span>Pago seguro pendiente de configurar</span></div><p class="billing-note">El acceso se habilita únicamente cuando el proveedor confirma el pago. No mostramos alias ni solicitamos transferencias manuales.</p></div><div class="billing-plans"><div class="billing-plan"><strong>Radar mensual</strong><span>Acceso completo durante 30 días</span><div class="billing-actions"><button id="payCheckout" type="button">Continuar al pago seguro</button><button class="secondary" id="paymentHelp" type="button">Ver qué incluye</button></div></div></div></div>`;
     document.querySelector('.filters')?.before(section);
-    document.getElementById('copyAlias')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(paymentAlias); notify(`Alias copiado: ${paymentAlias}`); } catch { notify(paymentAlias); } });
-    document.getElementById('payAlias')?.addEventListener('click', () => notify(`Usá el alias ${paymentAlias} en Mercado Pago y verificá el importe antes de confirmar.`));
+    document.getElementById('payCheckout')?.addEventListener('click', () => notify('El checkout seguro todavía no está conectado. Falta configurar el enlace de Mercado Pago o Stripe.'));
+    document.getElementById('paymentHelp')?.addEventListener('click', () => notify('Incluye ofertas verificadas, filtros por país, favoritos y alertas personalizadas.'));
   };
   const createLock = () => {
     if (document.getElementById('authLock')) return;
@@ -164,13 +179,27 @@
       document.getElementById('accountBtn')?.click();
     };
   };
+  const createPaymentLock = () => {
+    if (document.getElementById('paymentLock')) return;
+    const lock = document.createElement('div');
+    lock.id = 'paymentLock';
+    lock.className = 'payment-lock';
+    lock.innerHTML = '<div class="payment-lock-card"><div class="payment-lock-icon">$</div><h2>Activá tu acceso premium</h2><p>Para usar el catálogo, los filtros, favoritos y alertas necesitás completar la suscripción mensual.</p><div class="payment-actions"><button class="btn" id="openCheckout" type="button">Continuar al pago seguro</button><button class="btn payment-secondary" id="refreshPayment" type="button">Ya pagué, comprobar acceso</button></div><p class="payment-trust">El acceso se habilita automáticamente cuando el proveedor confirma el pago.</p></div>';
+    document.body.appendChild(lock);
+    document.getElementById('openCheckout').onclick = () => document.getElementById('payCheckout')?.click();
+    document.getElementById('refreshPayment').onclick = () => notify('Todavía no recibimos una confirmación de pago. Si acabás de pagar, esperá unos segundos y probá nuevamente.');
+  };
   const syncAccess = () => {
     clearStaleAccount();
     const ok = isLoggedIn();
     const lock = document.getElementById('authLock');
+    const paymentLock = document.getElementById('paymentLock');
     const authOpen = document.getElementById('authModal')?.classList.contains('show');
-    if (ok || authOpen) { lock?.remove(); createBilling(); document.body.style.overflow = ''; }
-    else { if (!lock) createLock(); document.body.style.overflow = 'hidden'; }
+    if (!ok && !authOpen) { paymentLock?.remove(); if (!lock) createLock(); document.body.style.overflow = 'hidden'; return; }
+    lock?.remove();
+    createBilling();
+    if (authOpen || hasPremiumAccess()) { paymentLock?.remove(); document.body.style.overflow = ''; }
+    else { createPaymentLock(); document.body.style.overflow = 'hidden'; }
   };
   createBilling();
   syncAccess();
