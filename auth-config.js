@@ -93,13 +93,12 @@ window.DEALRADAR_SUPABASE = {
         return;
       }
       const user = result.data.user;
-      localStorage.setItem(accountKey, JSON.stringify({
-        name: user?.user_metadata?.display_name || name || email.split('@')[0],
-        email: user?.email || email,
-        createdAt: new Date().toISOString()
-      }));
-      if (result.data.session) location.reload();
+      if (result.data.session) {
+        syncSession(result.data.session);
+        location.reload();
+      }
       else {
+        localStorage.removeItem(accountKey);
         button.disabled = false;
         button.textContent = 'Revisá tu email';
         showEmailPending(email);

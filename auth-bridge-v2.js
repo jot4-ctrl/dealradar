@@ -26,9 +26,11 @@
       const response = await fetch(endpoint, { method: 'POST', headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(signup ? { email, password, data: { display_name: name } } : { email, password }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error_description || data.msg || data.message || 'No pudimos iniciar sesión.');
-      if (data.access_token) localStorage.setItem(sessionKey, JSON.stringify(data));
-      localStorage.setItem(accountKey, JSON.stringify({ name: data.user?.user_metadata?.display_name || name || email.split('@')[0], email: data.user?.email || email, createdAt: new Date().toISOString() }));
-      if (data.access_token) location.reload();
+      if (data.access_token) {
+        localStorage.setItem(sessionKey, JSON.stringify(data));
+        localStorage.setItem(accountKey, JSON.stringify({ name: data.user?.user_metadata?.display_name || name || email.split('@')[0], email: data.user?.email || email, createdAt: new Date().toISOString() }));
+        location.reload();
+      }
       else { button.disabled = false; button.textContent = 'Revisá tu email'; if (note) note.textContent = 'Te enviamos un enlace para confirmar la cuenta.'; }
     } catch (error) {
       button.disabled = false;
@@ -67,6 +69,9 @@
     } catch { return false; }
   };
   const isLoggedIn = () => Boolean(read(accountKey) && hasValidSession());
+  const clearStaleAccount = () => {
+    if (read(accountKey) && !hasValidSession()) localStorage.removeItem(accountKey);
+  };
   const notify = message => {
     const toast = document.getElementById('toast');
     if (typeof window.toast === 'function') window.toast(message);
@@ -108,6 +113,7 @@
     };
   };
   const syncAccess = () => {
+    clearStaleAccount();
     const ok = isLoggedIn();
     const lock = document.getElementById('authLock');
     const authOpen = document.getElementById('authModal')?.classList.contains('show');
