@@ -163,7 +163,7 @@
     section.className = 'billing-section';
     section.innerHTML = `<div class="billing-card"><div><h2>Elegí tu acceso a DealRadar</h2><p>Una suscripción desbloquea el catálogo completo, favoritos, alertas y filtros internacionales.</p><div class="billing-status"><span class="billing-status-dot"></span><span>Pago seguro pendiente de configurar</span></div><p class="billing-note">El acceso se habilita únicamente cuando el proveedor confirma el pago. No mostramos alias ni solicitamos transferencias manuales.</p></div><div class="billing-plans"><div class="billing-plan"><strong>Radar mensual</strong><span>Acceso completo durante 30 días</span><div class="billing-actions"><button id="payCheckout" type="button">Continuar al pago seguro</button><button class="secondary" id="paymentHelp" type="button">Ver qué incluye</button></div></div></div></div>`;
     document.querySelector('.filters')?.before(section);
-    document.getElementById('payCheckout')?.addEventListener('click', () => notify('El checkout seguro todavía no está conectado. Falta configurar el enlace de Mercado Pago o Stripe.'));
+    document.getElementById('payCheckout')?.addEventListener('click', () => { window.location.href = './payment.html'; });
     document.getElementById('paymentHelp')?.addEventListener('click', () => notify('Incluye ofertas verificadas, filtros por país, favoritos y alertas personalizadas.'));
   };
   const createLock = () => {
@@ -186,8 +186,8 @@
     lock.className = 'payment-lock';
     lock.innerHTML = '<div class="payment-lock-card"><div class="payment-lock-icon">$</div><h2>Activá tu acceso premium</h2><p>Para usar el catálogo, los filtros, favoritos y alertas necesitás completar la suscripción mensual.</p><div class="payment-actions"><button class="btn" id="openCheckout" type="button">Continuar al pago seguro</button><button class="btn payment-secondary" id="refreshPayment" type="button">Ya pagué, comprobar acceso</button></div><p class="payment-trust">El acceso se habilita automáticamente cuando el proveedor confirma el pago.</p></div>';
     document.body.appendChild(lock);
-    document.getElementById('openCheckout').onclick = () => document.getElementById('payCheckout')?.click();
-    document.getElementById('refreshPayment').onclick = () => notify('Todavía no recibimos una confirmación de pago. Si acabás de pagar, esperá unos segundos y probá nuevamente.');
+    document.getElementById('openCheckout').onclick = () => { window.location.href = './payment.html'; };
+    document.getElementById('refreshPayment').onclick = () => { window.location.href = './payment.html?status=verify'; };
   };
   const syncAccess = () => {
     clearStaleAccount();
