@@ -101,12 +101,17 @@
     lock.className = 'auth-lock';
     lock.innerHTML = '<div class="auth-lock-card"><div class="auth-lock-icon">%</div><h2>Iniciá sesión para entrar</h2><p>El catálogo, los filtros, favoritos y alertas están disponibles para usuarios registrados.</p><button class="btn auth-submit" id="unlockDealRadar" type="button">Iniciar sesión</button></div>';
     document.body.appendChild(lock);
-    document.getElementById('unlockDealRadar').onclick = () => document.getElementById('accountBtn')?.click();
+    document.getElementById('unlockDealRadar').onclick = () => {
+      lock.remove();
+      document.body.style.overflow = '';
+      document.getElementById('accountBtn')?.click();
+    };
   };
   const syncAccess = () => {
     const ok = isLoggedIn();
     const lock = document.getElementById('authLock');
-    if (ok) { lock?.remove(); createBilling(); document.body.style.overflow = ''; }
+    const authOpen = document.getElementById('authModal')?.classList.contains('show');
+    if (ok || authOpen) { lock?.remove(); createBilling(); document.body.style.overflow = ''; }
     else { if (!lock) createLock(); document.body.style.overflow = 'hidden'; }
   };
   createBilling();
