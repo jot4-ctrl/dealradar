@@ -49,3 +49,69 @@
   setInterval(bind, 250);
   bind();
 })();
+
+(() => {
+  const sessionKey = 'dealradar-session-v1';
+  const accountKey = 'dealradar-account-v1';
+  const paymentAlias = 'joaquin.lauci';
+  const read = key => {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
+  };
+  const hasValidSession = () => {
+    const session = read(sessionKey);
+    const token = session?.access_token;
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return Number(payload.exp || 0) * 1000 > Date.now() + 30000;
+    } catch { return false; }
+  };
+  const isLoggedIn = () => Boolean(read(accountKey) && hasValidSession());
+  const notify = message => {
+    const toast = document.getElementById('toast');
+    if (typeof window.toast === 'function') window.toast(message);
+    else if (toast) { toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
+  };
+  const styles = document.createElement('style');
+  styles.textContent = `
+    .auth-lock{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:rgba(31,12,54,.48);backdrop-filter:blur(13px)}
+    .auth-lock-card{width:min(520px,100%);padding:34px;border-radius:28px;background:linear-gradient(145deg,#fff,#fff6fc);border:1px solid rgba(255,255,255,.8);box-shadow:0 30px 100px rgba(30,9,58,.35);text-align:center}
+    .auth-lock-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 16px;border-radius:19px;background:linear-gradient(135deg,#52e5c1,#c026d3);color:#fff;font-size:25px;font-weight:950;box-shadow:0 10px 24px rgba(192,38,211,.28)}
+    .auth-lock h2{margin:0;color:#25143c;font-size:30px;letter-spacing:-.06em}.auth-lock p{margin:10px auto 22px;max-width:390px;color:#6f6687}.auth-lock .btn{width:100%;max-width:300px}
+    .billing-section{margin:22px 0}.billing-card{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:stretch;background:linear-gradient(135deg,#29134f,#6d28d9 54%,#f43f8b);border:0;color:#fff;border-radius:25px;padding:24px;box-shadow:0 22px 56px rgba(101,42,146,.2)}
+    .billing-card h2{margin:0 0 8px;font-size:25px}.billing-card p{margin:0;color:#f7eaff}.billing-note{margin-top:14px!important;font-size:12px;color:#efdfff!important}.billing-plans{display:grid;grid-template-columns:1fr 1fr;gap:10px}.billing-plan{padding:16px;border-radius:17px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22)}.billing-plan strong{display:block;font-size:18px}.billing-plan span{display:block;margin:4px 0 13px;color:#f6dcff;font-size:12px}.billing-plan button{width:100%;border:0;border-radius:10px;padding:10px;background:#52e5c1;color:#1e1234;font-weight:900}.billing-plan button.secondary{background:#fff;color:#6d28d9}.billing-plan button[disabled]{opacity:.62;cursor:not-allowed}.alias-box{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:11px 12px;border-radius:12px;background:rgba(0,0,0,.19);font-family:ui-monospace,Consolas,monospace}.alias-box button{border:0;border-radius:8px;padding:7px 9px;background:#fff;color:#6d28d9;font-weight:850;font-size:12px}@media(max-width:700px){.billing-card{grid-template-columns:1fr}.billing-plans{grid-template-columns:1fr}}
+  `;
+  document.head.appendChild(styles);
+  const createBilling = () => {
+    if (document.getElementById('billingSection')) return;
+    const section = document.createElement('section');
+    section.id = 'billingSection';
+    section.className = 'billing-section';
+    section.innerHTML = `<div class="billing-card"><div><h2>Acceso premium a DealRadar</h2><p>Desbloqueá el radar completo, guardá tus oportunidades y configurá alertas personalizadas.</p><div class="alias-box"><span>${paymentAlias}</span><button id="copyAlias" type="button">Copiar alias</button></div><p class="billing-note">Pago manual por Mercado Pago o transferencia. Confirmá el importe y las condiciones antes de enviar dinero. Los pagos con tarjeta y otros medios se habilitan al conectar un checkout del proveedor.</p></div><div class="billing-plans"><div class="billing-plan"><strong>Radar mensual</strong><span>Acceso completo durante 30 días</span><button id="payAlias" type="button">Pagar con Mercado Pago</button></div><div class="billing-plan"><strong>Otros medios</strong><span>Tarjetas, débito y billeteras</span><button class="secondary" type="button" disabled>Próximamente</button></div></div></div>`;
+    document.querySelector('.filters')?.before(section);
+    document.getElementById('copyAlias')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(paymentAlias); notify(`Alias copiado: ${paymentAlias}`); } catch { notify(paymentAlias); } });
+    document.getElementById('payAlias')?.addEventListener('click', () => notify(`Usá el alias ${paymentAlias} en Mercado Pago y verificá el importe antes de confirmar.`));
+  };
+  const createLock = () => {
+    if (document.getElementById('authLock')) return;
+    const lock = document.createElement('div');
+    lock.id = 'authLock';
+    lock.className = 'auth-lock';
+    lock.innerHTML = '<div class="auth-lock-card"><div class="auth-lock-icon">%</div><h2>Iniciá sesión para entrar</h2><p>El catálogo, los filtros, favoritos y alertas están disponibles para usuarios registrados.</p><button class="btn auth-submit" id="unlockDealRadar" type="button">Iniciar sesión</button></div>';
+    document.body.appendChild(lock);
+    document.getElementById('unlockDealRadar').onclick = () => document.getElementById('accountBtn')?.click();
+  };
+  const syncAccess = () => {
+    const ok = isLoggedIn();
+    const lock = document.getElementById('authLock');
+    if (ok) { lock?.remove(); createBilling(); document.body.style.overflow = ''; }
+    else { if (!lock) createLock(); document.body.style.overflow = 'hidden'; }
+  };
+  createBilling();
+  syncAccess();
+  document.addEventListener('click', event => {
+    if (event.target?.id === 'logoutBtn') { localStorage.removeItem(sessionKey); localStorage.removeItem(accountKey); setTimeout(syncAccess, 0); }
+  }, true);
+  window.addEventListener('storage', syncAccess);
+  setInterval(syncAccess, 1000);
+})();
