@@ -22,7 +22,9 @@
     button.disabled = true;
     button.textContent = 'Conectando…';
     try {
-      const endpoint = signup ? `${cfg.url}/auth/v1/signup` : `${cfg.url}/auth/v1/token?grant_type=password`;
+      const endpoint = signup
+        ? `${cfg.url}/auth/v1/signup?redirect_to=${encodeURIComponent(new URL('./', window.location.href).href)}`
+        : `${cfg.url}/auth/v1/token?grant_type=password`;
       const response = await fetch(endpoint, { method: 'POST', headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(signup ? { email, password, data: { display_name: name } } : { email, password }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error_description || data.msg || data.message || 'No pudimos iniciar sesión.');
@@ -35,7 +37,13 @@
     } catch (error) {
       button.disabled = false;
       button.textContent = signup ? 'Crear mi cuenta' : 'Entrar a mi cuenta';
-      if (note) note.textContent = error.message;
+      const message = String(error.message || 'No pudimos completar la operación.');
+      if (signup && /already registered|already exists|already been registered/i.test(message)) {
+        document.getElementById('authMode')?.click();
+        if (note) note.innerHTML = 'Esta cuenta ya existe. Iniciá sesión con tu contraseña o usá el correo de recuperación.';
+      } else if (note) {
+        note.textContent = message;
+      }
     }
   };
 
