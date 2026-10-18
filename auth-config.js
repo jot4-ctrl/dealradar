@@ -75,7 +75,7 @@ window.DEALRADAR_SUPABASE = {
 })();
 
 // Carga un puente independiente para evitar interferencias de caché o del formulario local.
-document.write('<script src="auth-bridge.js"><\/script>');
+document.write('<script src="auth-bridge-v2.js"><\/script>');
 
 // Fallback sin CDN: funciona en navegadores que bloquean scripts de terceros.
 (() => {
