@@ -1,8 +1,8 @@
 // Acciones de pago con navegación directa, incluso si quedó un script anterior en caché.
 (() => {
   const routes = {
-    openCheckout: './payment.html',
-    payCheckout: './payment.html',
+    openCheckout: 'https://mpago.la/2dM7wA1',
+    payCheckout: 'https://mpago.la/2dM7wA1',
     refreshPayment: './payment.html?status=verify'
   };
   document.addEventListener('click', event => {
