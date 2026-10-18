@@ -10,6 +10,7 @@ window.DEALRADAR_SUPABASE = {
   if (!cfg.url || !cfg.anonKey) return;
 
   const accountKey = 'dealradar-account-v1';
+  const redirectUrl = () => new URL('./', window.location.href).href;
   const sources = [
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
     'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
@@ -29,6 +30,22 @@ window.DEALRADAR_SUPABASE = {
 
   const install = client => {
     window.DEALRADAR_SUPABASE_CLIENT = client;
+    const syncSession = session => {
+      const user = session?.user;
+      if (!user || !session?.access_token) return;
+      localStorage.setItem('dealradar-session-v1', JSON.stringify(session));
+      localStorage.setItem(accountKey, JSON.stringify({
+        name: user.user_metadata?.display_name || user.email?.split('@')[0] || 'amigo',
+        email: user.email || '',
+        createdAt: new Date().toISOString()
+      }));
+      if (window.location.hash.includes('access_token=') || window.location.hash.includes('type=signup')) {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        window.location.reload();
+      }
+    };
+    client.auth.onAuthStateChange((_event, session) => syncSession(session));
+    client.auth.getSession().then(({ data }) => syncSession(data?.session));
     document.addEventListener('submit', async event => {
       if (event.target.id !== 'authForm') return;
       event.preventDefault();
@@ -43,7 +60,7 @@ window.DEALRADAR_SUPABASE = {
       button.disabled = true;
       button.textContent = 'Conectando…';
       const result = signup
-        ? await client.auth.signUp({ email, password, options: { data: { display_name: name } } })
+        ? await client.auth.signUp({ email, password, options: { data: { display_name: name }, emailRedirectTo: redirectUrl() } })
         : await client.auth.signInWithPassword({ email, password });
       if (result.error) {
         button.disabled = false;
@@ -75,13 +92,14 @@ window.DEALRADAR_SUPABASE = {
 })();
 
 // Carga un puente independiente para evitar interferencias de caché o del formulario local.
-document.write('<script src="auth-bridge-v2.js?build=login-layer-2"><\/script>');
+document.write('<script src="auth-bridge-v2.js?build=auth-callback-1"><\/script>');
 
 // Fallback sin CDN: funciona en navegadores que bloquean scripts de terceros.
 (() => {
   const cfg = window.DEALRADAR_SUPABASE;
   if (!cfg.url || !cfg.anonKey) return;
   const accountKey = 'dealradar-account-v1';
+  const redirectUrl = () => new URL('./', window.location.href).href;
 
   document.addEventListener('submit', async event => {
     if (event.target.id !== 'authForm') return;
@@ -98,7 +116,7 @@ document.write('<script src="auth-bridge-v2.js?build=login-layer-2"><\/script>')
     button.disabled = true;
     button.textContent = 'Conectando…';
     const endpoint = signup
-      ? `${cfg.url}/auth/v1/signup`
+      ? `${cfg.url}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectUrl())}`
       : `${cfg.url}/auth/v1/token?grant_type=password`;
     try {
       const response = await fetch(endpoint, {
