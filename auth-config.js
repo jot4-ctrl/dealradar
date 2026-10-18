@@ -75,9 +75,7 @@ window.DEALRADAR_SUPABASE = {
 })();
 
 // Carga un puente independiente para evitar interferencias de caché o del formulario local.
-const dealradarBridge = document.createElement('script');
-dealradarBridge.src = 'auth-bridge.js';
-document.head.appendChild(dealradarBridge);
+document.write('<script src="auth-bridge.js"><\/script>');
 
 // Fallback sin CDN: funciona en navegadores que bloquean scripts de terceros.
 (() => {
