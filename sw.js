@@ -1,4 +1,4 @@
-const CACHE='dealscope-v15';
+const CACHE='dealscope-v16';
 self.addEventListener('install',()=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest','./icons/icon.svg','./data/coupons.json']))));
