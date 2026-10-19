@@ -105,6 +105,7 @@
   const sessionKey = 'dealradar-session-v1';
   const accountKey = 'dealradar-account-v1';
   const subscriptionKey = 'dealradar-subscription-v1';
+  const ownerEmail = 'joaquinlaucirica15@gmail.com';
   const checkoutUrl = 'https://mpago.la/2dM7wA1';
   const read = key => {
     try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
@@ -120,6 +121,8 @@
   };
   const isLoggedIn = () => Boolean(read(accountKey) && hasValidSession());
   const hasPremiumAccess = () => {
+    const account = read(accountKey);
+    if (account?.email?.trim().toLowerCase() === ownerEmail && hasValidSession()) return true;
     const subscription = read(subscriptionKey);
     return subscription?.status === 'active' && Number(subscription.expiresAt || 0) > Date.now();
   };
