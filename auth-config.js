@@ -150,7 +150,7 @@ window.DEALRADAR_SUPABASE = {
 })();
 
 // Carga un puente independiente para evitar interferencias de caché o del formulario local.
-document.write('<script src="auth-bridge-v2.js?build=auth-email-4"><\/script>');
+document.write('<script src="auth-bridge-v2.js?build=auth-email-5"><\/script>');
 
 // Fallback sin CDN: funciona en navegadores que bloquean scripts de terceros.
 (() => {
