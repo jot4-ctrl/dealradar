@@ -1,0 +1,2 @@
+[functions.dealradar-billing]
+verify_jwt = false

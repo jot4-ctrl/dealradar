@@ -105,8 +105,8 @@
   const sessionKey = 'dealradar-session-v1';
   const accountKey = 'dealradar-account-v1';
   const subscriptionKey = 'dealradar-subscription-v1';
-  const ownerEmail = 'joaquinlaucirica15@gmail.com';
-  const checkoutUrl = 'https://mpago.la/2dM7wA1';
+  const checkoutUrl = './payment.html';
+  const billingEndpoint = 'https://hfbelrcpgtstkccfwfol.supabase.co/functions/v1/dealradar-billing';
   const read = key => {
     try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
   };
@@ -120,11 +120,26 @@
     } catch { return false; }
   };
   const isLoggedIn = () => Boolean(read(accountKey) && hasValidSession());
-  const hasPremiumAccess = () => {
-    const account = read(accountKey);
-    if (account?.email?.trim().toLowerCase() === ownerEmail && hasValidSession()) return true;
-    const subscription = read(subscriptionKey);
-    return subscription?.status === 'active' && Number(subscription.expiresAt || 0) > Date.now();
+  let premiumVerified = false;
+  let premiumCheckAt = 0;
+  let premiumCheckPromise = null;
+  const hasPremiumAccess = () => premiumVerified;
+  const verifyPremiumAccess = async () => {
+    if (!hasValidSession()) { premiumVerified = false; return false; }
+    if (premiumCheckPromise) return premiumCheckPromise;
+    const session = read(sessionKey);
+    premiumCheckPromise = fetch(billingEndpoint, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status' })
+    }).then(async response => {
+      const result = await response.json();
+      premiumVerified = Boolean(response.ok && result.hasAccess);
+      premiumCheckAt = Date.now();
+      if (premiumVerified) localStorage.setItem(subscriptionKey, JSON.stringify({ provider: result.provider || 'paypal', status: 'active', expiresAt: result.currentPeriodEnd ? Date.parse(result.currentPeriodEnd) : 0, updatedAt: Date.now() }));
+      return premiumVerified;
+    }).catch(() => { premiumVerified = false; return false; }).finally(() => { premiumCheckPromise = null; });
+    return premiumCheckPromise;
   };
   const clearStaleAccount = () => {
     if (read(accountKey) && !hasValidSession()) {
@@ -165,7 +180,7 @@
     const section = document.createElement('section');
     section.id = 'billingSection';
     section.className = 'billing-section';
-    section.innerHTML = `<div class="billing-card"><div><h2>Elegí tu acceso a DealRadar</h2><p>Una suscripción desbloquea el catálogo completo, favoritos, alertas y filtros internacionales.</p><div class="billing-status"><span class="billing-status-dot"></span><span>Checkout seguro activo · Mercado Pago</span></div><p class="billing-note">Suscripción mensual de $8.000 ARS. El acceso se habilita cuando Mercado Pago confirma la suscripción.</p></div><div class="billing-plans"><div class="billing-plan"><strong>Radar mensual</strong><span>Acceso completo durante 30 días</span><div class="billing-actions"><button id="payCheckout" type="button">Continuar al pago seguro</button><button class="secondary" id="paymentHelp" type="button">Ver qué incluye</button></div></div></div></div>`;
+    section.innerHTML = `<div class="billing-card"><div><h2>Elegí tu acceso a DealRadar</h2><p>Una suscripción desbloquea el catálogo completo, favoritos, alertas y filtros internacionales.</p><div class="billing-status"><span class="billing-status-dot"></span><span>Checkout seguro activo · PayPal</span></div><p class="billing-note">Suscripción mensual de 6 USD. El acceso se habilita cuando PayPal confirma la suscripción desde el backend.</p></div><div class="billing-plans"><div class="billing-plan"><strong>Radar mensual</strong><span>Acceso completo durante 30 días</span><div class="billing-actions"><button id="payCheckout" type="button">Continuar al pago seguro</button><button class="secondary" id="paymentHelp" type="button">Ver qué incluye</button></div></div></div></div>`;
     document.querySelector('.filters')?.before(section);
     document.getElementById('payCheckout')?.addEventListener('click', () => { window.location.href = checkoutUrl; });
     document.getElementById('paymentHelp')?.addEventListener('click', () => notify('Incluye ofertas verificadas, filtros por país, favoritos y alertas personalizadas.'));
@@ -193,7 +208,7 @@
     document.getElementById('openCheckout').onclick = () => { window.location.href = checkoutUrl; };
     document.getElementById('refreshPayment').onclick = () => { window.location.href = './payment.html?status=verify'; };
   };
-  const syncAccess = () => {
+  const syncAccess = async () => {
     clearStaleAccount();
     const ok = isLoggedIn();
     const lock = document.getElementById('authLock');
@@ -202,7 +217,9 @@
     if (!ok && !authOpen) { paymentLock?.remove(); if (!lock) createLock(); document.body.style.overflow = 'hidden'; return; }
     lock?.remove();
     createBilling();
-    if (authOpen || hasPremiumAccess()) { paymentLock?.remove(); document.body.style.overflow = ''; }
+    if (authOpen) { paymentLock?.remove(); document.body.style.overflow = ''; return; }
+    if (Date.now() - premiumCheckAt > 30000) await verifyPremiumAccess();
+    if (hasPremiumAccess()) { paymentLock?.remove(); document.body.style.overflow = ''; }
     else { createPaymentLock(); document.body.style.overflow = 'hidden'; }
   };
   createBilling();
@@ -218,5 +235,5 @@
     if (event.target?.id === 'logoutBtn') { localStorage.removeItem(sessionKey); localStorage.removeItem(accountKey); setTimeout(syncAccess, 0); }
   }, true);
   window.addEventListener('storage', syncAccess);
-  setInterval(syncAccess, 1000);
+  setInterval(syncAccess, 30000);
 })();

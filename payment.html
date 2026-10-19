@@ -46,11 +46,12 @@
     </div>
     <p class="footer-note"><span aria-hidden="true">🔐</span> Tu información se procesa en un entorno seguro.</p>
   </main>
-  <script src="./payment-config.js?v=7ca9c04"></script>
+  <script src="./payment-config.js?v=11e514c"></script>
   <script>
     const paymentLinks = window.DEALRADAR_PAYMENT_LINKS || {};
     const paypalConfig = window.DEALRADAR_PAYPAL || {};
     const paymentNames = { paypal: 'PayPal' };
+    const billingEndpoint = 'https://hfbelrcpgtstkccfwfol.supabase.co/functions/v1/dealradar-billing';
     const primaryButton = document.querySelector('.checkout .btn-primary');
     const paypalSlot = document.getElementById('paypal-slot');
     let paypalSdkPromise;
@@ -88,12 +89,39 @@
         document.getElementById('paypal-button-container').innerHTML = '';
         paypal.Buttons({
           style: { shape: 'pill', color: 'gold', layout: 'vertical', label: 'subscribe' },
-          createSubscription: (_data, actions) => actions.subscription.create({ plan_id: paypalConfig.planId }),
-          onApprove: (data) => {
-            setStatus('Suscripción recibida', `PayPal confirmó la suscripción ${data.subscriptionID}. Estamos validando el acceso.`);
-            primaryButton.textContent = 'Volver a DealRadar →';
-            primaryButton.href = './?v=fc5b25d';
-            paypalSlot.querySelector('.paypal-slot-note').textContent = 'La activación del acceso se completa después de validar el estado de la suscripción.';
+          createSubscription: (_data, actions) => {
+            const session = JSON.parse(localStorage.getItem('dealradar-session-v1') || 'null');
+            const userId = session?.user?.id;
+            if (!userId) {
+              setStatus('Iniciá sesión antes de pagar', 'La suscripción debe quedar vinculada a tu cuenta de DealRadar.');
+              return Promise.reject(new Error('Sesión requerida'));
+            }
+            return actions.subscription.create({ plan_id: paypalConfig.planId, custom_id: userId });
+          },
+          onApprove: async (data) => {
+            const session = JSON.parse(localStorage.getItem('dealradar-session-v1') || 'null');
+            const token = session?.access_token;
+            if (!token) {
+              setStatus('Pago recibido, falta iniciar sesión', 'Volvé a DealRadar e iniciá sesión para vincular el pago a tu cuenta.');
+              return;
+            }
+            setStatus('Verificando la suscripción…', 'Estamos confirmando el estado directamente con PayPal.');
+            try {
+              const response = await fetch(billingEndpoint, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'claim', subscriptionId: data.subscriptionID })
+              });
+              const result = await response.json();
+              if (!response.ok || !result.hasAccess) throw new Error(result.error || 'PayPal todavía no informó una suscripción activa.');
+              localStorage.setItem('dealradar-subscription-v1', JSON.stringify({ provider: 'paypal', providerSubscriptionId: data.subscriptionID, status: 'active', expiresAt: result.currentPeriodEnd ? Date.parse(result.currentPeriodEnd) : 0, updatedAt: Date.now() }));
+              setStatus('Acceso activado', 'Tu suscripción fue confirmada por PayPal. Ya podés entrar a DealRadar.');
+              primaryButton.textContent = 'Entrar a DealRadar →';
+              primaryButton.href = './?v=11e514c';
+              paypalSlot.querySelector('.paypal-slot-note').textContent = 'La suscripción quedó vinculada a tu cuenta y se volverá a comprobar en cada acceso.';
+            } catch (error) {
+              setStatus('Pago recibido, pendiente de confirmación', error.message || 'Volvé a intentar en unos segundos desde “Ya pagué, comprobar acceso”.');
+            }
           },
           onError: () => setStatus('No se pudo completar el pago', 'PayPal informó un error. Revisá tu cuenta o intentá nuevamente.')
         }).render('#paypal-button-container');
@@ -142,13 +170,36 @@
       if (!event.currentTarget.getAttribute('href')) event.preventDefault();
     });
     selectMethod(paypalConfig.clientId && paypalConfig.planId ? 'paypal' : 'mercadopago');
+    const verifyCurrentAccess = async () => {
+      const session = JSON.parse(localStorage.getItem('dealradar-session-v1') || 'null');
+      if (!session?.access_token) {
+        setStatus('Iniciá sesión para comprobar el acceso', 'La cuenta debe estar abierta en este navegador para consultar tu suscripción.');
+        return;
+      }
+      setStatus('Comprobando con PayPal…', 'Consultando el estado actual de tu suscripción.');
+      try {
+        const response = await fetch(billingEndpoint, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'status' }) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'No pudimos consultar tu suscripción.');
+        if (result.hasAccess) {
+          setStatus('Acceso confirmado', 'PayPal informó una suscripción activa. Ya podés entrar a DealRadar.');
+          primaryButton.textContent = 'Entrar a DealRadar →';
+          primaryButton.href = './?v=11e514c';
+        } else {
+          setStatus('Todavía no hay una suscripción activa', 'Si acabás de pagar, esperá unos segundos y volvé a comprobar.');
+        }
+      } catch (error) {
+        setStatus('No se pudo comprobar el acceso', error.message || 'Intentá nuevamente en unos segundos.');
+      }
+    };
     if (new URLSearchParams(location.search).get('status') === 'verify') {
       document.getElementById('eyebrow').textContent = 'Pago en revisión';
       document.getElementById('title').innerHTML = 'Estamos comprobando tu <em>acceso</em>.';
       document.getElementById('description').textContent = 'Si ya completaste el pago, volvé a DealRadar para actualizar el estado de tu membresía.';
       document.getElementById('panelTitle').textContent = 'Terminá de activar tu membresía';
       document.getElementById('status').classList.add('show');
-      document.getElementById('statusText').textContent = 'El pago se procesa en Mercado Pago. Volvé a DealRadar cuando termines.';
+      document.getElementById('statusText').textContent = 'Consultaremos el estado directamente con PayPal.';
+      verifyCurrentAccess();
     }
   </script>
 </body>
