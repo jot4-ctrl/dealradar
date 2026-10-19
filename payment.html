@@ -30,7 +30,7 @@
         <div class="proofs">
           <div class="proof"><span class="proof-icon">✓</span><div><strong>Ofertas que se pueden entender</strong><span>Precio, país, vencimiento y condiciones visibles.</span></div></div>
           <div class="proof"><span class="proof-icon">⌁</span><div><strong>Un radar para comprar mejor</strong><span>Filtros internacionales, favoritos y alertas personalizadas.</span></div></div>
-          <div class="proof"><span class="proof-icon">↗</span><div><strong>Checkout protegido</strong><span>El pago se completa en el sitio oficial de Mercado Pago.</span></div></div>
+          <div class="proof"><span class="proof-icon">↗</span><div><strong>Checkout protegido</strong><span>El pago se completa en el sitio oficial del proveedor elegido.</span></div></div>
         </div>
       </section>
       <section class="panel" aria-labelledby="panelTitle">
@@ -38,6 +38,7 @@
         <div id="status" class="status"><strong>Revisá el estado de tu pago</strong><span id="statusText">El pago se procesa en Mercado Pago. Volvé a DealRadar cuando termines.</span></div>
         <div class="plan"><div class="plan-top"><span class="plan-name">DealRadar Premium</span><span class="plan-tag">MENSUAL</span></div><p class="plan-note">Acceso completo durante tu suscripción</p><div class="plan-bottom"><span class="price">$ 6 <small>USD / mes</small></span><span class="cancel">Cancelá cuando quieras</span></div></div>
         <div class="benefits"><div class="benefit"><span class="check">✓</span><span>Ofertas y precios destacados de todo el mundo</span></div><div class="benefit"><span class="check">✓</span><span>Cupones, bancos, apps y oportunidades reales</span></div><div class="benefit"><span class="check">✓</span><span>Alertas personalizadas para tus intereses</span></div><div class="benefit"><span class="check">✓</span><span>Filtros por país, categoría y tienda</span></div></div>
+        <div class="methods" aria-label="Medios de pago disponibles"><p class="methods-label">Elegí cómo pagar</p><button class="method" type="button" data-method="mercadopago"><span class="method-icon mp">MP</span><span class="method-copy"><strong>Mercado Pago</strong><span>Checkout en moneda local</span></span><span class="method-status">Disponible</span></button><button class="method active" type="button" data-method="paypal"><span class="method-icon pp">P</span><span class="method-copy"><strong>PayPal</strong><span>Suscripción mensual de 6 USD</span></span><span class="method-status">Activo</span></button></div>
         <div id="paypal-slot" class="paypal-slot" hidden><p class="paypal-slot-title">Suscripción segura con PayPal</p><div id="paypal-button-container"></div><p class="paypal-slot-note">PayPal procesa el cobro mensual de 6 USD. DealRadar no ve los datos de tu medio de pago.</p></div>
         <div class="checkout"><a class="btn btn-primary" href="https://mpago.la/2dM7wA1">Elegir medio de pago <span aria-hidden="true">&nbsp;→</span></a><a class="btn btn-secondary" href="./?v=fc5b25d">Volver a DealRadar</a><p class="microcopy">🔒 El pago se procesa en el proveedor seleccionado. DealRadar no almacena datos de tarjeta ni de billetera.</p></div>
         <div class="steps" aria-label="Pasos para activar la membresía"><div class="step"><span class="step-number">1</span><span>Elegí tu medio de pago</span></div><div class="step"><span class="step-number">2</span><span>Confirmá con el proveedor</span></div><div class="step"><span class="step-number">3</span><span>Volvé a DealRadar</span></div></div>
@@ -49,7 +50,7 @@
   <script>
     const paymentLinks = window.DEALRADAR_PAYMENT_LINKS || {};
     const paypalConfig = window.DEALRADAR_PAYPAL || {};
-    const paymentNames = { paypal: 'PayPal', binance: 'Binance Pay' };
+    const paymentNames = { paypal: 'PayPal' };
     const primaryButton = document.querySelector('.checkout .btn-primary');
     const paypalSlot = document.getElementById('paypal-slot');
     let paypalSdkPromise;
