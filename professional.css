@@ -9,3 +9,4 @@
 @media(max-width:800px){.conversion-section{grid-template-columns:1fr}.conversion-preview{grid-column:auto}.preview-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.professional-trust{grid-template-columns:1fr}.professional-card{padding:18px}.professional-footer{display:block}.professional-footer nav{margin-top:9px}}
 @media(max-width:480px){.conversion-section{padding:20px 17px;border-radius:21px}.preview-grid{grid-template-columns:1fr}.preview-card{min-height:118px}}
+.insight-strip{display:none!important}
