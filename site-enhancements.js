@@ -77,6 +77,11 @@
     if (target) target.after(shell);
   }
   function refresh(){ document.querySelector('.professional-shell')?.remove(); render(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render); else render();
+  function scheduleRender(){
+    render();
+    window.addEventListener('load', () => setTimeout(render, 0), {once:true});
+    setTimeout(render, 1200);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleRender, {once:true}); else scheduleRender();
   document.getElementById('lang')?.addEventListener('change', () => setTimeout(refresh, 0));
 })();
