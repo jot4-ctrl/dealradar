@@ -78,6 +78,7 @@
   }
   function refresh(){ document.querySelector('.professional-shell')?.remove(); render(); }
   function scheduleRender(){
+    document.head.insertAdjacentHTML('beforeend', '<style id="dealradar-focus-style">.insight-strip{display:none!important}</style>');
     document.querySelector('.insight-strip')?.remove();
     render();
     window.addEventListener('load', () => setTimeout(render, 0), {once:true});
