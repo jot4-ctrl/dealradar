@@ -85,8 +85,8 @@
       ['Ofertas para vos','Ofertas para ti'],['Pagá','Paga'],['podés','puedes'],['querés','quieres'],['Buscá','Busca'],
       ['Revisá','Revisa'],['Filtrá','Filtra'],['Guardá','Guarda'],['Activá','Activa'],['Explorá','Explora'],
       ['Confirmá','Confirma'],['Iniciá','Inicia'],['Usá','Usa'],['Hacé','Haz'],['Entrá','Entra'],['Escribí','Escribe'],
-      ['Creá','Crea'],['Elegí','Elige'],['tenés','tienes'],['usás','usas'],['abrís','abres'],['actualizás','actualizas'],
-      ['vos','ti']
+      ['Creá','Crea'],['creás','creas'],['Elegí','Elige'],['tenés','tienes'],['usás','usas'],['abrís','abres'],['actualizás','actualizas'],
+      ['activá','activa'],['empezá','empieza']
     ];
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let node;
@@ -94,6 +94,7 @@
       let value = node.nodeValue;
       replacements.forEach(([from,to]) => { value = value.replaceAll(from, to); });
       if (value !== node.nodeValue) node.nodeValue = value;
+      node.nodeValue = node.nodeValue.replace(/\bvos\b/g, 'tú');
     }
   }
   function scheduleRender(){
