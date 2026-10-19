@@ -78,6 +78,7 @@
   }
   function refresh(){ document.querySelector('.professional-shell')?.remove(); render(); }
   function scheduleRender(){
+    document.querySelector('.insight-strip')?.remove();
     render();
     window.addEventListener('load', () => setTimeout(render, 0), {once:true});
     setTimeout(render, 1200);
