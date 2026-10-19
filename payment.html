@@ -38,22 +38,48 @@
         <div id="status" class="status"><strong>Revisá el estado de tu pago</strong><span id="statusText">El pago se procesa en Mercado Pago. Volvé a DealRadar cuando termines.</span></div>
         <div class="plan"><div class="plan-top"><span class="plan-name">DealRadar Premium</span><span class="plan-tag">MENSUAL</span></div><p class="plan-note">Acceso completo durante tu suscripción</p><div class="plan-bottom"><span class="price">$ 8.000 <small>/mes</small></span><span class="cancel">Cancelá cuando quieras</span></div></div>
         <div class="benefits"><div class="benefit"><span class="check">✓</span><span>Ofertas y precios destacados de todo el mundo</span></div><div class="benefit"><span class="check">✓</span><span>Cupones, bancos, apps y oportunidades reales</span></div><div class="benefit"><span class="check">✓</span><span>Alertas personalizadas para tus intereses</span></div><div class="benefit"><span class="check">✓</span><span>Filtros por país, categoría y tienda</span></div></div>
-        <div class="methods" aria-label="Medios de pago disponibles"><p class="methods-label">Elegí cómo pagar</p><button class="method active" type="button" data-method="mercadopago"><span class="method-icon mp">MP</span><span class="method-copy"><strong>Mercado Pago</strong><span>Suscripción mensual en moneda local</span></span><span class="method-status">Activo</span></button><button class="method" type="button" data-method="paypal"><span class="method-icon pp">P</span><span class="method-copy"><strong>PayPal</strong><span>Suscripción mensual en USD</span></span><span class="method-status pending">Conectar</span></button><button class="method" type="button" data-method="binance"><span class="method-icon bn">₿</span><span class="method-copy"><strong>Binance Pay</strong><span>Cripto y conversión desde Binance</span></span><span class="method-status pending">Conectar</span></button></div>
+        <div class="methods" aria-label="Medios de pago disponibles"><p class="methods-label">Elegí cómo pagar</p><button class="method active" type="button" data-method="mercadopago"><span class="method-icon mp">MP</span><span class="method-copy"><strong>Mercado Pago</strong><span>Suscripción mensual en moneda local</span></span><span class="method-status">Activo</span></button><button class="method" type="button" data-method="paypal"><span class="method-icon pp">P</span><span class="method-copy"><strong>PayPal</strong><span>Suscripción mensual en USD</span></span><span class="method-status pending" data-status-for="paypal">Pendiente</span></button><button class="method" type="button" data-method="binance"><span class="method-icon bn">₿</span><span class="method-copy"><strong>Binance Pay</strong><span>Cripto y conversión desde Binance</span></span><span class="method-status pending" data-status-for="binance">Pendiente</span></button></div>
         <div class="checkout"><a class="btn btn-primary" href="https://mpago.la/2dM7wA1">Elegir medio de pago <span aria-hidden="true">&nbsp;→</span></a><a class="btn btn-secondary" href="./?v=fc5b25d">Volver a DealRadar</a><p class="microcopy">🔒 No ingreses datos de tarjeta en DealRadar. Mercado Pago protege el checkout.</p></div>
         <div class="steps" aria-label="Pasos para activar la membresía"><div class="step"><span class="step-number">1</span><span>Elegí tu medio de pago</span></div><div class="step"><span class="step-number">2</span><span>Confirmá en Mercado Pago</span></div><div class="step"><span class="step-number">3</span><span>Volvé y disfrutá</span></div></div>
       </section>
     </div>
     <p class="footer-note"><span aria-hidden="true">🔐</span> Tu información se procesa en un entorno seguro.</p>
   </main>
+  <script src="./payment-config.js?v=4d257aa"></script>
   <script>
-    document.querySelectorAll('.method').forEach((button) => button.addEventListener('click', () => {
-      if (button.dataset.method !== 'mercadopago') {
-        document.getElementById('status').classList.add('show');
-        document.getElementById('statusText').textContent = 'Este medio se habilitará cuando conectemos la cuenta comercial correspondiente. Mercado Pago ya está disponible.';
+    const paymentLinks = window.DEALRADAR_PAYMENT_LINKS || {};
+    const paymentNames = { paypal: 'PayPal', binance: 'Binance Pay' };
+    const primaryButton = document.querySelector('.checkout .btn-primary');
+    const selectMethod = (method) => {
+      document.querySelectorAll('.method').forEach((item) => item.classList.toggle('active', item.dataset.method === method));
+      const link = paymentLinks[method];
+      const status = document.getElementById('status');
+      if (method === 'mercadopago') {
+        primaryButton.textContent = 'Elegir medio de pago →';
+        primaryButton.href = 'https://mpago.la/2dM7wA1';
+        status.classList.remove('show');
         return;
       }
-      window.location.href = 'https://mpago.la/2dM7wA1';
-    }));
+      if (link) {
+        primaryButton.textContent = `Continuar con ${paymentNames[method]} →`;
+        primaryButton.href = link;
+        primaryButton.target = '_blank';
+        primaryButton.rel = 'noopener';
+        status.classList.remove('show');
+      } else {
+        primaryButton.textContent = `Conectar ${paymentNames[method]} →`;
+        primaryButton.removeAttribute('href');
+        primaryButton.removeAttribute('target');
+        primaryButton.removeAttribute('rel');
+        status.classList.add('show');
+        document.getElementById('statusText').textContent = `${paymentNames[method]} todavía no está conectado. El enlace de checkout debe configurarse desde la cuenta comercial antes de recibir pagos.`;
+      }
+    };
+    document.querySelectorAll('.method').forEach((button) => button.addEventListener('click', () => selectMethod(button.dataset.method)));
+    document.querySelector('.checkout .btn-primary').addEventListener('click', (event) => {
+      if (!event.currentTarget.getAttribute('href')) event.preventDefault();
+    });
+    selectMethod('mercadopago');
     if (new URLSearchParams(location.search).get('status') === 'verify') {
       document.getElementById('eyebrow').textContent = 'Pago en revisión';
       document.getElementById('title').innerHTML = 'Estamos comprobando tu <em>acceso</em>.';
