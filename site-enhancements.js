@@ -30,8 +30,42 @@
       if (/Las preferencias y favoritos|Your preferences and favorites|Suas preferências e favoritos/.test(note.textContent)) note.textContent = currentCopy;
     });
   }
+  function renderConversionSection() {
+    if (document.querySelector('.conversion-section')) return;
+    const lang = document.getElementById('lang')?.value || 'es';
+    const landing = {
+      es: {eyebrow:'POR QUÉ SUSCRIBIRTE', title:'Pagá menos con información que podés comprobar.', text:'DealRadar reúne oportunidades de compra y deja visibles el país, la fuente y las condiciones antes de que decidas.', benefits:[['01','Ofertas que podés revisar','Cada oportunidad enlaza con la página donde se publica.'],['02','Filtros para encontrar lo que buscás','Elegí país, categoría, tienda o tipo de ahorro.'],['03','Detalles antes de comprar','Revisá vigencia, stock, restricciones, envío e impuestos.']], preview:'Oportunidades reales del catálogo', cta:'Explorar ofertas'},
+      en: {eyebrow:'WHY SUBSCRIBE', title:'Pay less with information you can check.', text:'DealRadar brings shopping opportunities together and shows the country, source and conditions before you decide.', benefits:[['01','Deals you can review','Every opportunity links to the page where it is published.'],['02','Filters that save time','Choose a country, category, store or saving type.'],['03','Details before checkout','Review validity, stock, restrictions, shipping and taxes.']], preview:'Real opportunities in the catalog', cta:'Explore deals'},
+      pt: {eyebrow:'POR QUE ASSINAR', title:'Pague menos com informação verificável.', text:'O DealRadar reúne oportunidades de compra e mostra país, fonte e condições antes da sua decisão.', benefits:[['01','Ofertas para conferir','Cada oportunidade leva à página onde foi publicada.'],['02','Filtros que economizam tempo','Escolha país, categoria, loja ou tipo de economia.'],['03','Detalhes antes da compra','Confira validade, estoque, restrições, envio e impostos.']], preview:'Oportunidades reais do catálogo', cta:'Explorar ofertas'}
+    }[lang] || null;
+    const c = landing || {eyebrow:'POR QUÉ SUSCRIBIRTE', title:'Pagá menos con información que podés comprobar.', text:'DealRadar reúne oportunidades de compra y deja visibles el país, la fuente y las condiciones antes de que decidas.', benefits:[], preview:'Oportunidades reales del catálogo', cta:'Explorar ofertas'};
+    const section = document.createElement('section');
+    section.className = 'conversion-section';
+    section.setAttribute('aria-label', c.eyebrow);
+    section.innerHTML = `<div class="conversion-copy"><span class="conversion-eyebrow">${esc(c.eyebrow)}</span><h2>${esc(c.title)}</h2><p>${esc(c.text)}</p><a class="conversion-cta" href="#offers">${esc(c.cta)} <span aria-hidden="true">→</span></a></div><div class="conversion-benefits">${c.benefits.map(x=>`<article><b>${esc(x[0])}</b><div><h3>${esc(x[1])}</h3><p>${esc(x[2])}</p></div></article>`).join('')}</div><div class="conversion-preview"><div class="conversion-preview-head"><span>${esc(c.preview)}</span><small>DealRadar</small></div><div class="preview-grid" id="dealPreview"></div></div>`;
+    const target = document.querySelector('.hero');
+    if (!target) return;
+    target.after(section);
+    const fillPreview = () => {
+      const preview = section.querySelector('#dealPreview');
+      if (!preview || preview.children.length) return;
+      const cards = [...document.querySelectorAll('#offers .card')].slice(0, 3);
+      if (!cards.length) return;
+      preview.innerHTML = cards.map(card => {
+        const store = card.querySelector('.store')?.textContent || 'Oferta verificada';
+        const title = card.querySelector('h3')?.textContent || 'Oportunidad de compra';
+        const off = card.querySelector('.off')?.textContent || 'Ver oferta';
+        const link = card.querySelector('a.open')?.getAttribute('href') || '#offers';
+        return `<a class="preview-card" href="${esc(link)}" target="_blank" rel="noopener"><span>${esc(store)}</span><strong>${esc(off)}</strong><h3>${esc(title)}</h3><small>Fuente y condiciones visibles&nbsp; ↗</small></a>`;
+      }).join('');
+    };
+    fillPreview();
+    const offers = document.getElementById('offers');
+    if (offers) new MutationObserver(fillPreview).observe(offers, {childList:true, subtree:true});
+  }
   function render() {
     applyPrivacyCopy();
+    renderConversionSection();
     if (document.querySelector('.professional-shell')) return;
     const accountNote = document.querySelector('.auth-note');
     if (accountNote) accountNote.textContent = 'Tu cuenta se gestiona de forma segura. No compartas tu contraseña ni datos de pago.';
