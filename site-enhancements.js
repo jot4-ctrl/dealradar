@@ -77,13 +77,33 @@
     if (target) target.after(shell);
   }
   function refresh(){ document.querySelector('.professional-shell')?.remove(); render(); }
+  function normalizeSpanish(){
+    const lang = document.getElementById('lang');
+    if (!lang || lang.value !== 'es') return;
+    if (lang.options[0]) lang.options[0].textContent = 'Español';
+    const replacements = [
+      ['Ofertas para vos','Ofertas para ti'],['Pagá','Paga'],['podés','puedes'],['querés','quieres'],['Buscá','Busca'],
+      ['Revisá','Revisa'],['Filtrá','Filtra'],['Guardá','Guarda'],['Activá','Activa'],['Explorá','Explora'],
+      ['Confirmá','Confirma'],['Iniciá','Inicia'],['Usá','Usa'],['Hacé','Haz'],['Entrá','Entra'],['Escribí','Escribe'],
+      ['Creá','Crea'],['Elegí','Elige'],['tenés','tienes'],['usás','usas'],['abrís','abres'],['actualizás','actualizas'],
+      ['vos','ti']
+    ];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while (node = walker.nextNode()) {
+      let value = node.nodeValue;
+      replacements.forEach(([from,to]) => { value = value.replaceAll(from, to); });
+      if (value !== node.nodeValue) node.nodeValue = value;
+    }
+  }
   function scheduleRender(){
     document.head.insertAdjacentHTML('beforeend', '<style id="dealradar-focus-style">.insight-strip{display:none!important}</style>');
     document.querySelector('.insight-strip')?.remove();
     render();
+    normalizeSpanish();
     window.addEventListener('load', () => setTimeout(render, 0), {once:true});
-    setTimeout(render, 1200);
+    setTimeout(() => { render(); normalizeSpanish(); }, 1200);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleRender, {once:true}); else scheduleRender();
-  document.getElementById('lang')?.addEventListener('change', () => setTimeout(refresh, 0));
+  document.getElementById('lang')?.addEventListener('change', () => setTimeout(() => { refresh(); normalizeSpanish(); }, 0));
 })();
