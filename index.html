@@ -32,6 +32,7 @@ $('search').value=state.search;$('country').value=state.country;$('category').va
 <script src="recovery-bootstrap.js?v=43fc071"></script>
 <script src="password-recovery.js?v=6adf9e3"></script>
 <script src="site-enhancements.js?v=9" defer></script>
+<script src="dealradar-upgrades.js?v=20261022" defer></script>
 <script>
 (()=>{const fix=()=>{const lang=document.getElementById('lang');if(!lang||lang.value!=='es')return;if(lang.options[0])lang.options[0].textContent='Español';const pairs=[['Ofertas para vos','Ofertas para ti'],['Pagá','Paga'],['podés','puedes'],['podés','puedes'],['querés','quieres'],['Buscá','Busca'],['buscás','buscas'],['Revisá','Revisa'],['Filtrá','Filtra'],['Guardá','Guarda'],['Activá','Activa'],['Explorá','Explora'],['Confirmá','Confirma'],['confirmá','confirma'],['Iniciá','Inicia'],['Usá','Usa'],['Hacé','Haz'],['Entrá','Entra'],['Escribí','Escribe'],['Creá','Crea'],['creás','creas'],['Elegí','Elige'],['tenés','tienes'],['usás','usas'],['abrís','abres'],['actualizás','actualizas'],['activá','activa'],['empezá','empieza'],['Encontrá','Encuentra'],['encontrá','encuentra']];const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){let v=n.nodeValue;pairs.forEach(([a,b])=>{v=v.replaceAll(a,b)});n.nodeValue=v.replace(/\bvos\b/g,'tú')}};window.addEventListener('load',()=>setTimeout(fix,1500),{once:true});let runs=0;const timer=setInterval(()=>{fix();if(++runs>=16)clearInterval(timer)},500)})();
 </script>
