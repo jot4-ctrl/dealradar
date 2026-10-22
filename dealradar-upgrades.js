@@ -24,7 +24,7 @@
     section.innerHTML = `
       <article class="local-radar-card">
         <h2>Radar local · Bahía Blanca</h2>
-        <p>Encontrá oportunidades de comercios cercanos como <strong>Makro</strong> y compará sus catálogos con otras cadenas de la ciudad.</p>
+        <p>Encuentra oportunidades de comercios cercanos como <strong>Makro</strong> y compara sus catálogos con otras cadenas de la ciudad.</p>
         <a class="local-radar-link" href="https://makro.com.ar/ofertas/bahia-blanca/" target="_blank" rel="noopener">Abrir fuente de Makro ↗</a>
       </article>
       <article class="local-radar-note">
